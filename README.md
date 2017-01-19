@@ -7,7 +7,7 @@ This is an example application that utilizes the [bitter-irc](https://github.com
 To run execute the following command in the repository root after cloning to your local machine.
 
 ```
-go run main.go -oauth=your_oauth_token -clientid=your_client_id -username=your_username -chanels=example,channels
+go run main.go -oauth=token -clientid=id -username=user -channels=example,channels
 ```
 
 As you can see you need to pass in a few flags:
@@ -21,9 +21,8 @@ These are pretty self-explanatory. "oauth" is your oauth token. "channels" is a 
 
 ## Explanation
 
-An example to demonstrate how to setup the core of a small bot. The application will connect to multiple Twitch IRC channels
-and start pumping the messages to stdout via the logger digester. It also has a small reactive digester, named pingHandler, 
-that will respond to a user that executes the !ping command in a channel.
+The application will connect to multiple Twitch IRC channels and start pumping the messages to stdout via rhe logger digester. 
+It also has a small reactive digester, named pingHandler, that will respond to a user that executes the !ping command in a channel.
 
 When running you'll see log messages in your terminal that look something like this:
 
@@ -31,7 +30,7 @@ When running you'll see log messages in your terminal that look something like t
 
 And an example of the pingHandler:
 
-> 2017-01-10 12:32:10 [user] !ping
+> 2017-01-10 12:32:10 [user] !ping  
 > 2017-01-10 12:32:10 [bot] pong @user
 
 ## Notes
