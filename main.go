@@ -31,7 +31,7 @@ func main() {
 	// Fan out to connect to channels
 	for _, channel := range env.channels {
 		go func(chanName string) {
-			c := birc.NewTwitchChannel(chanName, env.username, env.oauth, logger, pingHandler)
+			c := birc.NewTwitchChannel(chanName, env.username, env.oauth, true, logger, pingHandler)
 			err := c.Connect()
 			if err != nil {
 				errors <- err
@@ -49,25 +49,13 @@ func main() {
 		}(channel)
 		// Delay to prevent bumping up against rate limiting when connecting to multiple channels
 		time.Sleep(350 * time.Millisecond)
-
 	}
 
 	// Fan in errors
 	for i := 0; i <= len(env.channels); i++ {
 		select {
-		case e := <-errors:
-			if e == nil {
-				break
-			}
-
-			switch e.(type) {
-			case *birc.ChannelError:
-				ce := e.(*birc.ChannelError)
-				// If we receive a ChannelError be sure to Disconnect
-				ce.Channel.Disconnect()
-			}
-
-			fmt.Println(e.Error())
+		case err := <-errors:
+			fmt.Println(err.Error())
 		}
 	}
 }
@@ -91,15 +79,15 @@ func getEnvironment() *environment {
 
 // logger is a basic digester that will print out messages to stdout as they come in. It's basically a clone
 // of the birc.Logger built-in logging digester but it's here for demonstration purposes.
-func logger(m birc.Message, w birc.ChannelWriter) {
-	if m.Username != "" && m.Content != "" {
-		fmt.Printf("%s [%s] %s\n", m.Time.Format("2006-01-06 15:04:05"), m.Username, m.Content)
+func logger(m birc.Message, c birc.ChannelWriter) {
+	if m.Content != "" {
+		fmt.Printf("(%s) %s [%s] %s\n", c.GetConfig().ChannelName, m.Time.Format("2006-01-06 15:04:05"), m.Name, m.Content)
 	}
 }
 
 // pingHandler is a digester that will respond to a !ping command by ponging the user back.
-func pingHandler(m birc.Message, w birc.ChannelWriter) {
+func pingHandler(m birc.Message, c birc.ChannelWriter) {
 	if m.Content == "!ping" {
-		w.Send(fmt.Sprintf("Pong @%s\n", m.Username))
+		c.Send(fmt.Sprintf("Pong @%s\n", m.Username))
 	}
 }
